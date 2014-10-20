@@ -145,7 +145,9 @@ sub check_quorum {
 
 sub check_offline_nodes {
   my $line = shift;
-  if ( $line =~ m/^offline:\s*\[\s*(\S+)\s*\]/i ) {
+  if ( $line =~ m/^Node\s*(\S+)\s*\(\d+\):\s*UNCLEAN \(offline\)/i ) {
+      $np->add_message( CRITICAL, "; node $1 unclean offline" );
+  } elsif ( $line =~ m/^offline:\s*\[\s*(\S+)\s*\]/i ) {
     my @offline = split( /\s+/, $1 );
     foreach my $node (@offline) {
       $np->add_message( $warn_or_crit, "; node $node offline" );
