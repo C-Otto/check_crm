@@ -152,7 +152,7 @@ foreach my $line (<$fh>) {
         $np->add_message( CRITICAL,
             "; FAILED actions detected or not cleaned up" );
     }
-    elsif ( $line =~ m/\s*(\S+?)\s+ \(.*\)\:\s+\w+\s+\w+\s+\(unmanaged\)\s+/i )
+    elsif ( $line =~ m/\s*(\S+?)\s+\(.*\)\:\s+\w+\s+\w+\s+\(unmanaged\)\s+/i )
     {
 
         # Check Unmanaged
