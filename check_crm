@@ -52,6 +52,7 @@ determine_warning_or_critical();
 my @crm_output;
 gather_crm_output();
 
+our $ms_or_clone_set;
 foreach my $line (@crm_output) {
   check_connection($line);
   check_quorum($line);
@@ -171,7 +172,6 @@ sub check_stopped_resources {
 
 sub check_set_stopped {
   my $line = shift;
-  my $ms_or_clone_set;
 
   if ($line =~ m/\s*(?:Clone|Master\/Slave) Set:\s+\S+\s+\[(\S+)\]/ ) {
     $ms_or_clone_set = $1;
