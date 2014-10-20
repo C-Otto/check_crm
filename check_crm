@@ -33,7 +33,7 @@
 #		    threshold ( Zoran Bosnjak & Marko Hrastovec )
 #
 # NOTES: Requires Perl 5.8 or higher & the Perl Module Nagios::Plugin
-#        Nagios user will need sudo acces - suggest adding line below to
+#        Nagios user will need sudo access - suggest adding line below to
 #        sudoers
 #	     nagios  ALL=(ALL) NOPASSWD: /usr/sbin/crm_mon -1 -r -f
 #
