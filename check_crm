@@ -127,7 +127,7 @@ foreach my $line (<$fh>) {
         # Count offline nodes
         my @offline = split( /\s+/, $1 );
         my $numoffline = scalar @offline;
-        $np->add_message( $warn_or_crit, ": $numoffline Nodes Offline" );
+        $np->add_message( $warn_or_crit, "; $numoffline Nodes Offline" );
     }
     elsif ( $line =~ m/^node\s+(\S.*):\s*standby/i ) {
 
@@ -139,35 +139,35 @@ foreach my $line (<$fh>) {
     elsif ( $line =~ m/\s*(\S+)\s+\(\S+\)\:\s+Stopped/ ) {
 
         # Check Resources Stopped
-        $np->add_message( $warn_or_crit, ": $1 Stopped" );
+        $np->add_message( $warn_or_crit, "; $1 Stopped" );
     }
     elsif ( $line =~ m/\s*stopped\:\s*\[(.*)\]/i ) {
 
         # Check Master/Slave stopped
-        $np->add_message( $warn_or_crit, ": $1 Stopped" );
+        $np->add_message( $warn_or_crit, "; $1 Stopped" );
     }
     elsif ( $line =~ m/^Failed actions\:/ ) {
 
         # Check Failed Actions
         $np->add_message( CRITICAL,
-            ": FAILED actions detected or not cleaned up" );
+            "; FAILED actions detected or not cleaned up" );
     }
     elsif ( $line =~ m/\s*(\S+?)\s+ \(.*\)\:\s+\w+\s+\w+\s+\(unmanaged\)\s+/i )
     {
 
         # Check Unmanaged
-        $np->add_message( CRITICAL, ": $1 unmanaged FAILED" );
+        $np->add_message( CRITICAL, "; $1 unmanaged FAILED" );
     }
     elsif ( $line =~ m/\s*(\S+?)\s+ \(.*\)\:\s+not installed/i ) {
 
         # Check for errors
-        $np->add_message( CRITICAL, ": $1 not installed" );
+        $np->add_message( CRITICAL, "; $1 not installed" );
     }
     elsif ( $line =~ m/\s*(\S+?):.*fail-count=(\d+)/i ) {
         if ( $2 >= $np->opts->failcount ) {
 
             # Check for resource Fail count (suggested by Vadym Chepkov)
-            $np->add_message( WARNING, ": $1 failure detected, fail-count=$2" );
+            $np->add_message( WARNING, "; $1 failure detected, fail-count=$2" );
         }
     }
 }
@@ -175,7 +175,7 @@ foreach my $line (<$fh>) {
 # If found any Nodes in standby & no -s option used send warn/crit
 if ( scalar @standby > 0 && !$np->opts->standbyignore ) {
     $np->add_message( $warn_or_crit,
-        ": " . join( ', ', @standby ) . " in Standby" );
+        "; " . join( ', ', @standby ) . " in Standby" );
 }
 
 close($fh) or $np->nagios_exit( CRITICAL, "Running $crm_mon FAILED" );
@@ -190,7 +190,7 @@ if ($ConstraintsFlag) {
     foreach my $line (<$fh>) {
         if ( $line =~ m/location cli-(prefer|standby)-\S+\s+(\S+)/ ) {
             $np->add_message( WARNING,
-                ": $2 blocking location constraint detected" );
+                "; $2 blocking location constraint detected" );
         }
     }
     close($fh)
