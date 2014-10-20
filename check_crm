@@ -1,8 +1,8 @@
 #!/usr/bin/perl
 #
-# check_crm_v0_5
+# check_crm_v0_6
 #
-# Copyright © 2011 Philip Garner, Sysnix Consultants Limited
+# Copyright © 2013 Philip Garner, Sysnix Consultants Limited
 #
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -19,14 +19,15 @@
 #
 # Authors: Phil Garner - phil@sysnix.com & Peter Mottram - peter@sysnix.com
 #
-# Acknowledgements: Vadym Chepkov, Sönke Martens
-#
 # v0.1 09/01/2011
 # v0.2 11/01/2011
 # v0.3 22/08/2011 - bug fix and changes suggested by Vadym Chepkov
 # v0.4 23/08/2011 - update for spelling and anchor regex capture (Vadym Chepkov)
 # v0.5 29/09/2011 - Add standby warn/crit suggested by Sönke Martens & removal
 #                   of 'our' to 'my' to completely avoid problems with ePN
+# v0.6 14/03/2013 - Change from \w+ to \S+ in stopped check to cope with
+#                   Servers that have non word charachters in.  Suggested by
+#                   Igal Baevsky.
 #
 # NOTES: Requires Perl 5.8 or higher & the Perl Module Nagios::Plugin
 #        Nagios user will need sudo acces - suggest adding line below to
@@ -50,7 +51,7 @@ my $crm_mon = '/usr/sbin/crm_mon';
 
 my $np = Nagios::Plugin->new(
     shortname => 'check_crm',
-    version   => '0.5',
+    version   => '0.6',
     usage     => "Usage: %s <ARGS>\n\t\t--help for help\n",
 );
 
@@ -114,7 +115,7 @@ foreach my $line (<$fh>) {
         push @standby, $1;
     }
 
-    elsif ( $line =~ m/\s*(\w+)\s+\(\S+\)\:\s+Stopped/ ) {
+    elsif ( $line =~ m/\s*(\S+)\s+\(\S+\)\:\s+Stopped/ ) {
 
         # Check Resources Stopped
         $np->add_message( $warn_or_crit, ": $1 Stopped" );
@@ -130,8 +131,7 @@ foreach my $line (<$fh>) {
         $np->add_message( CRITICAL,
             ": FAILED actions detected or not cleaned up" );
     }
-    elsif (
-        $line =~ m/\s*(\S+?)\s+ \(.*\)\:\s+\w+\s+\w+\s+\(unmanaged\)\s+FAILED/ )
+    elsif ( $line =~ m/\s*(\S+?)\s+ \(.*\)\:\s+\w+\s+\w+\s+\(unmanaged\)\s+/i )
     {
 
         # Check Unmanaged
