@@ -92,6 +92,7 @@ $np->getopts;
 my $ConstraintsFlag = $np->opts->constraint;
 
 my @standby;
+my $ms_or_clone_set;
 
 # Check for -w option set warn if this is case instead of crit
 my $warn_or_crit = 'CRITICAL';
@@ -141,10 +142,16 @@ foreach my $line (<$fh>) {
         # Check Resources Stopped
         $np->add_message( $warn_or_crit, "; $1 Stopped" );
     }
-    elsif ( $line =~ m/\s*stopped\:\s*\[(.*)\]/i ) {
+    elsif ($line =~ m/\s*(?:Clone|Master\/Slave) Set:\s+\S+\s+\[(\S+)\]/ ) {
+      $ms_or_clone_set = $1;
+    }
+    elsif ( $line =~ m/\s*stopped\:\s*\[\s*+(.*)\s*\]/i ) {
+        my @stopped = split( /\s+/, $1 );
 
         # Check Master/Slave stopped
-        $np->add_message( $warn_or_crit, "; $1 Stopped" );
+        foreach (@stopped) {
+          $np->add_message( $warn_or_crit, "; $ms_or_clone_set stopped on $_" );
+        }
     }
     elsif ( $line =~ m/^Failed actions\:/ ) {
 
