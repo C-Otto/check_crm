@@ -52,16 +52,18 @@ determine_warning_or_critical();
 my @crm_output;
 gather_crm_output();
 
-check_connection();
-check_quorum();
-check_offline_nodes();
-check_standby_nodes();
-check_stopped_resources();
-check_set_stopped();
-check_failed_actions();
-check_unmanaged_resources();
-check_not_installed();
-check_fail_count();
+foreach my $line (@crm_output) {
+  check_connection($line);
+  check_quorum($line);
+  check_offline_nodes($line);
+  check_standby_nodes($line);
+  check_stopped_resources($line);
+  check_set_stopped($line);
+  check_failed_actions($line);
+  check_unmanaged_resources($line);
+  check_not_installed($line);
+  check_fail_count($line);
+}
 check_constraints();
 
 $np->nagios_exit( $np->check_messages() );
@@ -121,106 +123,95 @@ sub gather_crm_output {
 }
 
 sub check_connection {
-  foreach my $line (@crm_output) {
-      if ( $line =~ m/Connection to cluster failed\:(.*)/i ) {
-          $np->nagios_exit( CRITICAL, "Connection to cluster failed: $1" );
-      }
+  my $line = shift;
+  if ( $line =~ m/Connection to cluster failed\:(.*)/i ) {
+      $np->nagios_exit( CRITICAL, "Connection to cluster failed: $1" );
   }
 }
 
 sub check_quorum {
-  foreach my $line (@crm_output) {
-    if ( $line =~ m/Current DC:/ ) {
-        if ( $line =~ m/partition with quorum$/ ) {
-            # Assume cluster is OK - we only add warn/crit after here
-            $np->add_message( OK, "cluster OK" );
-        }
-        else {
-            $np->add_message( CRITICAL, "no quorum" );
-        }
+  my $line = shift;
+  if ( $line =~ m/Current DC:/ ) {
+    if ( $line =~ m/partition with quorum$/ ) {
+        # Assume cluster is OK - we only add warn/crit after here
+        $np->add_message( OK, "cluster OK" );
+    }
+    else {
+        $np->add_message( CRITICAL, "no quorum" );
     }
   }
 }
 
 sub check_offline_nodes {
-  foreach my $line (@crm_output) {
-    if ( $line =~ m/^offline:\s*\[\s*(\S.*?)\s*\]/i ) {
-        my @offline = split( /\s+/, $1 );
-        foreach my $node (@offline) {
-          $np->add_message( $warn_or_crit, "; node $node offline" );
-        }
+  my $line = shift;
+  if ( $line =~ m/^offline:\s*\[\s*(\S.*?)\s*\]/i ) {
+    my @offline = split( /\s+/, $1 );
+    foreach my $node (@offline) {
+      $np->add_message( $warn_or_crit, "; node $node offline" );
     }
   }
 }
 
 
 sub check_standby_nodes {
+  my $line = shift;
   if ( !$np->opts->standbyignore ) {
-    foreach my $line (@crm_output) {
-      if ( $line =~ m/^node\s+(\S.*)\s\(\d+\):\s*standby/i ) {
-        $np->add_message( $warn_or_crit, "; node $1 standby" );
-      }
+    if ( $line =~ m/^node\s+(\S.*)\s\(\d+\):\s*standby/i ) {
+      $np->add_message( $warn_or_crit, "; node $1 standby" );
     }
   }
 }
 
 sub check_stopped_resources {
-  foreach my $line (@crm_output) {
-    if ( $line =~ m/\s*(\S+)\s+\(\S+\)\:\s+Stopped/ ) {
-        $np->add_message( $warn_or_crit, "; resource $1 stopped" );
-    }
+  my $line = shift;
+  if ( $line =~ m/\s*(\S+)\s+\(\S+\)\:\s+Stopped/ ) {
+      $np->add_message( $warn_or_crit, "; resource $1 stopped" );
   }
 }
 
 sub check_set_stopped {
+  my $line = shift;
   my $ms_or_clone_set;
 
+  if ($line =~ m/\s*(?:Clone|Master\/Slave) Set:\s+\S+\s+\[(\S+)\]/ ) {
+    $ms_or_clone_set = $1;
+  } elsif ( $line =~ m/\s*stopped\:\s*\[\s*+(.*)\s*\]/i ) {
+    my @stopped = split( /\s+/, $1 );
 
-  foreach my $line (@crm_output) {
-    if ($line =~ m/\s*(?:Clone|Master\/Slave) Set:\s+\S+\s+\[(\S+)\]/ ) {
-      $ms_or_clone_set = $1;
-    } elsif ( $line =~ m/\s*stopped\:\s*\[\s*+(.*)\s*\]/i ) {
-      my @stopped = split( /\s+/, $1 );
-
-      foreach my $host (@stopped) {
-        $np->add_message( $warn_or_crit, "; resource $ms_or_clone_set stopped on $host" );
-      }
+    foreach my $host (@stopped) {
+      $np->add_message( $warn_or_crit, "; resource $ms_or_clone_set stopped on $host" );
     }
   }
 }
 
 sub check_failed_actions {
-  foreach my $line (@crm_output) {
-    if ( $line =~ m/^Failed actions\:/ ) {
-        $np->add_message( CRITICAL, "; failed actions detected or not cleaned up" );
-    }
+  my $line = shift;
+  if ( $line =~ m/^Failed actions\:/ ) {
+      $np->add_message( CRITICAL, "; failed actions detected or not cleaned up" );
   }
 }
 
 sub check_unmanaged_resources {
-  foreach my $line (@crm_output) {
-    if ( $line =~ m/\s*(\S+?)\s+\(.*\)\:\s+\w+\s+\w+\s+\(unmanaged\)\s+/i )
-    {
-        $np->add_message( CRITICAL, "; resource $1 unmanaged" );
-    }
+  my $line = shift;
+  if ( $line =~ m/\s*(\S+?)\s+\(.*\)\:\s+\w+\s+\w+\s+\(unmanaged\)\s+/i )
+  {
+      $np->add_message( CRITICAL, "; resource $1 unmanaged" );
   }
 }
 
 sub check_not_installed {
-  foreach my $line (@crm_output) {
-    if ( $line =~ m/\s*(\S+?)\s+ \(.*\)\:\s+not installed/i ) {
-        $np->add_message( CRITICAL, "; resource $1 not installed" );
-    }
+  my $line = shift;
+  if ( $line =~ m/\s*(\S+?)\s+ \(.*\)\:\s+not installed/i ) {
+      $np->add_message( CRITICAL, "; resource $1 not installed" );
   }
 }
 
 sub check_fail_count {
-  foreach my $line (@crm_output) {
-      if ( $line =~ m/\s*(\S+?):.*fail-count=(\d+)/i ) {
-          if ( $2 >= $np->opts->failcount ) {
-              $np->add_message( WARNING, "; failure for resource $1 detected, fail-count=$2" );
-          }
-      }
+  my $line = shift;
+  if ( $line =~ m/\s*(\S+?):.*fail-count=(\d+)/i ) {
+    if ( $2 >= $np->opts->failcount ) {
+        $np->add_message( WARNING, "; failure for resource $1 detected, fail-count=$2" );
+    }
   }
 }
 
