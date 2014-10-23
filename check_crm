@@ -20,26 +20,13 @@
 #		    threshold ( Zoran Bosnjak & Marko Hrastovec )
 #
 # NOTES: Requires Perl 5.8 or higher & the Perl Module Nagios::Plugin
-#        Nagios user will need sudo access - suggest adding line below to
-#        sudoers
-#	     nagios  ALL=(ALL) NOPASSWD: /usr/sbin/crm_mon -1 -r -f
-#
-#		if you want to check for location constraints (-c) also add
-#	     nagios  ALL=(ALL) NOPASSWD: /usr/sbin/crm configure show
-#
-#	     In sudoers if requiretty is on (off state is default)
-#	     you will also need to add the line below
-#	     Defaults:nagios !requiretty
-#
 
 use warnings;
 use strict;
 use Nagios::Plugin;
 
-# Lines below may need changing if crm_mon or sudo installed in a
-# different location.
+# Lines below may need changing if crm_mon installed in a different location.
 
-my $sudo               = '/usr/bin/sudo';
 my $crm_mon            = '/usr/sbin/crm_mon -1 -r -f';
 my $crm_configure_show = '/usr/sbin/crm configure show';
 
@@ -112,7 +99,7 @@ sub setup_nagios_plugin {
 
 sub gather_crm_output {
   my $filehandle;
-  my $command = "$sudo $crm_mon";
+  my $command = "$crm_mon";
   my $errormessage= "Running $command failed";
 
   open( $filehandle, "$command |" )
@@ -220,7 +207,7 @@ sub check_fail_count {
 sub check_constraints {
   # if -c flag set check configuration for constraints
 
-  my $command = "$sudo $crm_configure_show";
+  my $command = "$crm_configure_show";
   my $ConstraintsFlag = $np->opts->constraint;
   if ($ConstraintsFlag) {
       my $filehandle;
