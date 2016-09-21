@@ -175,7 +175,7 @@ sub check_set_stopped {
 
 sub check_failed_actions {
   my $line = shift;
-  if ( $line =~ m/^Failed actions\:/ ) {
+  if ( $line =~ m/^Failed [aA]ctions\:/ ) {
       $np->add_message( CRITICAL, "; failed actions detected or not cleaned up" );
   }
 }
