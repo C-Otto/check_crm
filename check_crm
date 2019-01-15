@@ -21,7 +21,9 @@
 # v0.8 01/15/2019 - Use Monitoring::Plugin instead of Nagios::Plugin.
 #                   Nagios::Plugin isn't supported anymore.
 #
-# NOTES: Requires Perl 5.8 or higher & the Perl Module Nagios::Plugin
+# NOTES:    Requires Perl 5.8 or higher & the Perl Module Nagios::Plugin
+#           Add the nagios/nrpe user to the haclient group (the name can be
+#           different on other OSes). check_crm will not use sudo.
 
 use warnings;
 use strict;
