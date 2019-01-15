@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 #
-# check_crm_v0_7
+# check_crm_v0_8
 #
 # Copyright © 2013 Philip Garner, Sysnix Consultants Limited
 #
@@ -15,15 +15,17 @@
 # v0.6 14/03/2013 - Change from \w+ to \S+ in stopped check to cope with
 #                   Servers that have non word charachters in.  Suggested by
 #                   Igal Baevsky.
-# v0.7 01/09/2013 - In testing as still not fully tested.  Adds optional 
-#		    constraints check (Boris Wesslowski). Adds fail count 
-#		    threshold ( Zoran Bosnjak & Marko Hrastovec )
+# v0.7 01/09/2013 - In testing as still not fully tested.  Adds optional
+#                   constraints check (Boris Wesslowski). Adds fail count
+#                   threshold ( Zoran Bosnjak & Marko Hrastovec )
+# v0.8 01/15/2019 - Use Monitoring::Plugin instead of Nagios::Plugin.
+#                   Nagios::Plugin isn't supported anymore.
 #
 # NOTES: Requires Perl 5.8 or higher & the Perl Module Nagios::Plugin
 
 use warnings;
 use strict;
-use Nagios::Plugin;
+use Monitoring::Plugin;
 
 # Lines below may need changing if crm_mon installed in a different location.
 
@@ -63,9 +65,9 @@ sub determine_warning_or_critical {
 }
 
 sub setup_nagios_plugin {
-  $np = Nagios::Plugin->new(
+  $np = Monitoring::Plugin->new(
       shortname => 'check_crm',
-      version   => '0.7',
+      version   => '0.8',
       usage     => "Usage: %s <ARGS>\n\t\t--help for help\n",
   );
 
